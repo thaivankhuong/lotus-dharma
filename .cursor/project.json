@@ -1,0 +1,75 @@
+{
+  "name": "LotusDharma Project",
+  "description": "A global Buddhism management and knowledge platform (Budda Project). This repository contains the backend and frontend systems following the Clean Architecture pattern.",
+  "owner": "Khuong",
+  "context": {
+    "primaryFocus": "Backend API development using .NET 9 (Clean Architecture by Jason Taylor)",
+    "secondaryFocus": "Frontend web app using React/Next.js for user interaction",
+    "principles": [
+      "SOLID principles",
+      "Clean Architecture",
+      "CQRS + MediatR pattern",
+      "FluentValidation for input validation",
+      "English-only comments and code"
+    ]
+  },
+  "structure": {
+    "backend": {
+      "path": "src/",
+      "projects": [
+        "Domain",
+        "Application",
+        "Infrastructure",
+        "API"
+      ],
+      "technologies": [
+        ".NET 9",
+        "Entity Framework Core",
+        "MediatR",
+        "FluentValidation",
+        "AutoMapper",
+        "JWT Authentication",
+        "Serilog"
+      ],
+      "rules": [
+        "backend.rules"
+      ]
+    },
+    "frontend": {
+      "path": "src/WebApp",
+      "technologies": [
+        "React",
+        "Next.js",
+        "TypeScript",
+        "TailwindCSS"
+      ],
+      "rules": [
+        "frontend.rules"
+      ]
+    }
+  },
+  "codingConventions": {
+    "language": "English",
+    "naming": {
+      "classes": "PascalCase",
+      "interfaces": "Prefix with 'I'",
+      "files": "Match class name",
+      "commandsQueries": "{Action}{Entity}Command / {Entity}Query"
+    },
+    "testing": {
+      "approach": "Unit and Integration tests",
+      "mocking": "Use in-memory DB or mocks instead of real DB"
+    }
+  },
+  "team": {
+    "lead": "Khuong",
+    "role": "Senior Backend Developer",
+    "collaboration": "Cursor AI assists as a senior software architect following the project's rules"
+  },
+  "notes": [
+    "All comments, commits, and documentation must be in English.",
+    "Backend must strictly separate layers as per Clean Architecture.",
+    "No circular dependencies between projects.",
+    "Cursor AI should always generate code aligned with backend.rules."
+  ]
+}

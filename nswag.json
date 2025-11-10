@@ -1,0 +1,22 @@
+{
+  "runtime": "Net90",
+  "documentGenerator": {
+    "fromSwagger": {
+      "url": "https://localhost:5001/swagger/v1/swagger.json"
+    }
+  },
+  "codeGenerators": {
+    "openApiToTypeScriptClient": {
+      "className": "{controller}Client",
+      "moduleName": "",
+      "namespace": "",
+      "typeScriptVersion": 5.0,
+      "template": "Fetch",
+      "promiseType": "Promise",
+      "output": "src/api-client/api.ts",
+      "generateClientClasses": true,
+      "generateClientInterfaces": false,
+      "generateOptionalParameters": true
+    }
+  }
+}

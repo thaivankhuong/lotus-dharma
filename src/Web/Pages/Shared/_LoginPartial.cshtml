@@ -1,0 +1,28 @@
+﻿@* 
+    Note: This project now uses JWT Bearer Token authentication via API endpoints.
+    Traditional ASP.NET Core Identity UI has been replaced with custom implementation.
+    
+    For authentication, use:
+    - POST /api/identity/register
+    - POST /api/identity/login
+    
+    See Swagger UI at /api for testing.
+*@
+
+<ul class="navbar-nav">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" title="User">Hello @User.Identity.Name!</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="/api">API Docs</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="/api">API Docs / Login</a>
+        </li>
+    }
+</ul>

@@ -1,0 +1,71 @@
+# ==========================================================
+# LotusDharma Backend API – Cursor Rules
+# Based on JasonTaylor Clean Architecture (.NET 9)
+# ==========================================================
+
+rules:
+  - id: solid
+    description: >
+      Follow the SOLID principles:
+      - S: A class should have only one responsibility.
+      - O: Open for extension, closed for modification.
+      - L: Subclasses must be substitutable for their base classes.
+      - I: Interfaces should be small and specific.
+      - D: Depend on abstractions, not concrete implementations.
+
+  - id: clean-architecture
+    description: >
+      Follow Clean Architecture rules:
+      - Domain layer must not depend on Application, Infrastructure, or API layers.
+      - Application layer depends only on Domain.
+      - Infrastructure implements Application abstractions.
+      - API layer communicates only with Application layer.
+      - No reverse or circular dependencies between layers.
+
+  - id: dependency-rule
+    description: >
+      Prevent circular dependencies.
+      Infrastructure should only implement interfaces from the Application layer.
+      Application must never reference Infrastructure implementations.
+
+  - id: cqrs-mediatr
+    description: >
+      Use the CQRS pattern with MediatR:
+      - Commands handle write operations.
+      - Queries handle read operations.
+      - Business logic must be in handlers, not in controllers.
+
+  - id: validation-exception
+    description: >
+      Use FluentValidation for all DTO input validation.
+      Implement global exception middleware.
+      Do not throw exceptions directly from controllers.
+
+  - id: repository-uow
+    description: >
+      Access domain entities only through repository interfaces.
+      Never use DbContext directly outside Infrastructure.
+      Apply Unit of Work when multiple repositories share the same transaction.
+
+  - id: naming-convention
+    description: >
+      Naming conventions:
+      - Class names: PascalCase
+      - Interface names: Prefix with 'I'
+      - File names must match class names
+      - Command/Query naming format: {Action}{Entity}Command / {Entity}Query
+
+  - id: testing-di
+    description: >
+      All services must be registered through Dependency Injection.
+      Unit tests must not rely on real databases (use mocks or in-memory setups).
+      Do not manually instantiate services in business logic.
+
+  - id: english-only
+    description: >
+      All comments, variable names, method names, and documentation must be written in English.
+      Do not use Vietnamese or any non-English text anywhere in the project.
+
+# ==========================================================
+# End of Rules
+# ==========================================================

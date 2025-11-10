@@ -1,0 +1,35 @@
+﻿using System.Reflection;
+using LotusDharma.Application.Common.Interfaces;
+using LotusDharma.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace LotusDharma.Infrastructure.Data;
+
+public class ApplicationDbContext : DbContext, IApplicationDbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    // Domain entities
+    public DbSet<TodoList> TodoLists => Set<TodoList>();
+
+    public DbSet<TodoItem> TodoItems => Set<TodoItem>();
+    
+    public DbSet<Product> Products => Set<Product>();
+    
+    public DbSet<Category> Categories => Set<Category>();
+
+    // Custom Identity entities
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<Role> Roles => Set<Role>();
+
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+
+    public DbSet<UserToken> UserTokens => Set<UserToken>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    }
+}
