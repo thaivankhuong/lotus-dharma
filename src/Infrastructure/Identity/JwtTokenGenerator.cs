@@ -3,17 +3,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using LotusDharma.Domain.Entities;
+using LotusDharma.Application.Common.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LotusDharma.Infrastructure.Identity;
-
-public interface IJwtTokenGenerator
-{
-    string GenerateToken(User user, IEnumerable<string> roles);
-    string GenerateRefreshToken();
-    ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
-}
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

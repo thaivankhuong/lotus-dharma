@@ -45,6 +45,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.Services.AddTransient<IIdentityService, IdentityService>();
+        // Google authentication service
+        builder.Services.AddScoped<LotusDharma.Application.Common.Interfaces.IGoogleAuthService, LotusDharma.Infrastructure.Services.GoogleAuthService>();
 
         // Cấu hình JWT Authentication
         var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
