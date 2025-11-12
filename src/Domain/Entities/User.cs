@@ -11,6 +11,18 @@ public class User : BaseAuditableEntity
     
     public string PasswordHash { get; set; } = string.Empty;
     
+    // External authentication provider name (e.g., "Google", "Local")
+    public string? Provider { get; set; }
+
+    // External provider unique id (for Google this maps to 'sub')
+    public string? ProviderId { get; set; }
+
+    // Profile picture url from external provider
+    public string? PictureUrl { get; set; }
+
+    // Last login timestamp
+    public DateTimeOffset? LastLoginAt { get; set; }
+    
     public string? PhoneNumber { get; set; }
     
     public bool EmailConfirmed { get; set; }
