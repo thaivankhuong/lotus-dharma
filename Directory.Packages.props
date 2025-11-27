@@ -69,9 +69,11 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
     <!--#endif-->
     <!--#if (UsePostgreSQL)-->
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.0.0" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="9.0.0" />
     <!--#endif-->
+    <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
     <!--#if (UseSqlite)-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EfcoreVersion)" />
     <!--#endif-->

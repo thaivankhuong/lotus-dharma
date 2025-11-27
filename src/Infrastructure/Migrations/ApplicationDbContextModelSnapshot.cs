@@ -4,6 +4,7 @@ using LotusDharma.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -377,6 +378,144 @@ namespace LotusDharma.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("LotusDharma.Domain.Entities.Province", b =>
+                {
+                    b.Property<string>("ProvinceId")
+                        .HasColumnName("province_id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdministrativeCenter")
+                        .HasColumnName("administrative_center")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdministrativeUnits")
+                        .HasColumnName("administrative_units")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("AreaKm2")
+                        .HasColumnName("area_km2")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnName("created_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnName("latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnName("longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnName("name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameNew")
+                        .HasColumnName("name_new")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("Population")
+                        .HasColumnName("population")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BeforeMerger")
+                        .HasColumnName("before_merger")
+                        .HasColumnType("text");
+
+                    b.Property<MultiPolygon>("Geometry")
+                        .HasColumnName("geometry")
+                        .HasColumnType("geometry(MultiPolygon,4326)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnName("updated_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("ProvinceId");
+
+                    b.ToTable("provinces");
+                });
+
+            modelBuilder.Entity("LotusDharma.Domain.Entities.Commune", b =>
+                {
+                    b.Property<string>("CommuneId")
+                        .HasColumnName("commune_id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnName("created_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnName("latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnName("longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnName("name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameNew")
+                        .HasColumnName("name_new")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BeforeMerger")
+                        .HasColumnName("before_merger")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("AreaKm2")
+                        .HasColumnName("area_km2")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("ProvinceId")
+                        .HasColumnName("province_id")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("Population")
+                        .HasColumnName("population")
+                        .HasColumnType("bigint");
+
+                    b.Property<MultiPolygon>("Geometry")
+                        .HasColumnName("geometry")
+                        .HasColumnType("geometry(MultiPolygon,4326)");
+
+                    b.Property<string>("Type")
+                        .HasColumnName("type")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnName("updated_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("CommuneId");
+
+                    b.HasIndex("ProvinceId");
+
+                    b.ToTable("communes");
+                });
+
+            modelBuilder.Entity("LotusDharma.Domain.Entities.Commune", b =>
+                {
+                    b.HasOne("LotusDharma.Domain.Entities.Province", "Province")
+                        .WithMany("Communes")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Province");
+                });
+
+            modelBuilder.Entity("LotusDharma.Domain.Entities.Province", b =>
+                {
+                    b.Navigation("Communes");
                 });
 
             modelBuilder.Entity("LotusDharma.Domain.Entities.Product", b =>

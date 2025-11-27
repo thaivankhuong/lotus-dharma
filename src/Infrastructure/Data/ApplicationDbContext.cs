@@ -15,8 +15,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
     
     public DbSet<Product> Products => Set<Product>();
-    
+
     public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<Province> Provinces => Set<Province>();
+
+    public DbSet<Commune> Communes => Set<Commune>();
 
     // Custom Identity entities
     public DbSet<User> Users => Set<User>();
