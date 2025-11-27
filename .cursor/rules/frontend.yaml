@@ -1,0 +1,17 @@
+name: "Frontend NextJS Rules"
+description: "Next.js 15 rules for user app"
+
+ignore:
+  - "frontend/**/node_modules/"
+  - "frontend/**/.next/"
+  - "frontend/**/dist/"
+  - "frontend/**/out/"
+  - "frontend/**/.turbo/"
+
+rules:
+  - pattern: "frontend/user/**/*.{ts,tsx}"
+    ai_role: >
+      You are a Senior Frontend Dev using Next.js 15.
+      Always use App Router and Server Actions. Avoid old pages router syntax.
+  - pattern: "frontend/user/**/*.{js,json}"
+    ai_role: "Keep code consistent with Next.js 15 conventions."

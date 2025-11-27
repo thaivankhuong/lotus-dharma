@@ -1,70 +1,103 @@
-# ==========================================================
-# LotusDharma Backend API – Cursor Rules
-# Based on JasonTaylor Clean Architecture (.NET 9)
-# ==========================================================
+name: "Backend .NET Rules"
+description: "Cursor rules for Lotus Dharma Backend API (.NET 9, Clean Architecture)"
 
+# ==========================================================
+# AI ROLE
+# ==========================================================
+ai_role: >
+  You are a Senior .NET Architect with 15 years of experience, following
+  JasonTaylor Clean Architecture for .NET 9. 
+  You must keep existing architecture stable and MUST NOT break existing APIs,
+  models, or naming conventions unless explicitly requested.
+
+# ==========================================================
+# RULES – ARCHITECTURE
+# ==========================================================
 rules:
   - id: solid
     description: >
       Follow the SOLID principles:
-      - S: A class should have only one responsibility.
-      - O: Open for extension, closed for modification.
-      - L: Subclasses must be substitutable for their base classes.
-      - I: Interfaces should be small and specific.
-      - D: Depend on abstractions, not concrete implementations.
+      - Single Responsibility only
+      - Open for extension
+      - Respect Liskov Substitution
+      - Interfaces must be small and specific
+      - Depend on abstractions, not concrete implementations
 
   - id: clean-architecture
     description: >
       Follow Clean Architecture rules:
-      - Domain layer must not depend on Application, Infrastructure, or API layers.
-      - Application layer depends only on Domain.
-      - Infrastructure implements Application abstractions.
-      - API layer communicates only with Application layer.
-      - No reverse or circular dependencies between layers.
-
-  - id: dependency-rule
-    description: >
-      Prevent circular dependencies.
-      Infrastructure should only implement interfaces from the Application layer.
-      Application must never reference Infrastructure implementations.
+      - Domain must not depend on Application, Infrastructure, or API
+      - Application depends only on Domain
+      - Infrastructure implements Application abstractions
+      - API communicates only with Application layer
 
   - id: cqrs-mediatr
     description: >
-      Use the CQRS pattern with MediatR:
-      - Commands handle write operations.
-      - Queries handle read operations.
-      - Business logic must be in handlers, not in controllers.
+      Enforce CQRS with MediatR:
+      - Commands handle write operations
+      - Queries handle read operations
+      - Controllers must call MediatR only
+      - Business logic belongs in handlers, NOT controllers
 
-  - id: validation-exception
+  - id: controller-rules
     description: >
-      Use FluentValidation for all DTO input validation.
-      Implement global exception middleware.
-      Do not throw exceptions directly from controllers.
+      Controller rules:
+      - Must be thin
+      - No business logic inside controllers
+      - All validation via FluentValidation
+      - No direct DbContext, no direct repository access
 
   - id: repository-uow
     description: >
-      Access domain entities only through repository interfaces.
-      Never use DbContext directly outside Infrastructure.
-      Apply Unit of Work when multiple repositories share the same transaction.
+      Use repository interfaces and Unit of Work.
+      Do not use DbContext directly outside Infrastructure layer.
 
   - id: naming-convention
     description: >
-      Naming conventions:
-      - Class names: PascalCase
-      - Interface names: Prefix with 'I'
-      - File names must match class names
-      - Command/Query naming format: {Action}{Entity}Command / {Entity}Query
+      Naming:
+      - Classes: PascalCase
+      - Interfaces: IName
+      - Files must match class names
+      - CQRS naming: {Action}{Entity}Command or {Entity}Query
 
-  - id: testing-di
+  - id: validation-exception
     description: >
-      All services must be registered through Dependency Injection.
-      Unit tests must not rely on real databases (use mocks or in-memory setups).
-      Do not manually instantiate services in business logic.
+      Use FluentValidation for input validation.
+      Use a global exception middleware.
+      Do not throw exceptions directly inside controllers or handlers.
+
+  - id: test-di
+    description: >
+      All application services must use DI.
+      Unit tests must use in-memory/mocks, not real database connections.
 
   - id: english-only
     description: >
-      All comments, variable names, method names, and documentation must be written in English.
-      Do not use Vietnamese or any non-English text anywhere in the project.
+      All comments, variable names, and code must be in English only.
+
+  - id: safety-db-migration
+    description: >
+      NEVER modify EF Core migrations unless explicitly requested.
+      Do not generate new migration files automatically.
+
+# ==========================================================
+# IGNORE (Performance Boost)
+# ==========================================================
+ignore:
+  - "**/bin/"
+  - "**/obj/"
+  - "**/temp/"
+  - "**/packages/"
+  - "**/Migrations/"
+  - "**/*.cache"
+  - "**/*.log"
+
+# ==========================================================
+# TARGET FILE TYPES (IMPORTANT)
+# ==========================================================
+target:
+  - "src/**/*.cs"
+  - "**/*.sln"
 
 # ==========================================================
 # End of Rules

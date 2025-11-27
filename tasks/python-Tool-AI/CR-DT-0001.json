@@ -1,0 +1,130 @@
+{
+  "goal": "Design a scalable and maintainable Python project to crawl pagoda (temple) data across Vietnam using Google Maps Places API.",
+  "project_location": "G:/ATom-Khuong/LotusDharma-Project/lotus-dharma/tools/lotus_crawler",
+  "context": {
+    "description": "The crawler collects temple name, address, coordinates, rating, reviews, place_id and province information. The system must support future province changes due to Vietnam's administrative restructuring (2025 merges).",
+    "design_principles": [
+      "SOLID",
+      "Clean Architecture",
+      "Separation of Concerns",
+      "High Maintainability",
+      "Extensibility for multi-source crawling"
+    ],
+    "python_version": "Python 3.10+",
+    "tech_stack": [
+      "HTTPX or Requests",
+      "Asyncio (if needed)",
+      "Pydantic (models)",
+      "MongoDB / JSON output",
+      "Dependency Injection",
+      "Logging framework"
+    ]
+  },
+  "province_handling": {
+    "rules": [
+      "System must search temples using both old and new province names.",
+      "Support merged provinces from 2025 according to Vietnam's administrative updates.",
+      "Allow configuration file to define province name mappings (old → new).",
+      "Crawler must attempt queries for: 'chùa tại <province>', 'chùa <province>', 'temple <province>'."
+    ],
+    "output": "Normalized province name stored as new 2025 provinces."
+  },
+  "data_requirements": {
+    "fields": [
+      "name",
+      "address",
+      "province_original",
+      "province_normalized",
+      "latitude",
+      "longitude",
+      "rating",
+      "user_ratings_total",
+      "place_id",
+      "source"
+    ],
+    "output_formats": [
+      "JSON file",
+      "CSV",
+      "MongoDB collection (optional)"
+    ]
+  },
+  "crawler_requirements": {
+    "api": "Google Maps Places API",
+    "features": [
+      "Places Text Search",
+      "Handle next_page_token pagination",
+      "Retry with exponential backoff",
+      "Central config for Google API key",
+      "Address normalization",
+      "Province normalization after 2025"
+    ],
+    "future_expandable_sources": [
+      "OpenStreetMap",
+      "Overpass API",
+      "Vietnam local crawlers (phatgiao.org.vn, dulich24)"
+    ]
+  },
+  "architecture": {
+    "layers": [
+      "domain (entities, value objects, interfaces)",
+      "application/use_cases (crawler flow, logic)",
+      "infrastructure (API clients, repositories, DB)",
+      "interface (CLI commands / runner)"
+    ],
+    "design_patterns": [
+      "Repository Pattern",
+      "Factory Pattern",
+      "Strategy Pattern (switch crawl sources)",
+      "Adapter Pattern (API response → domain model)",
+      "Singleton for GoogleMapsClient",
+      "Config Loader Pattern"
+    ]
+  },
+  "module_structure": {
+    "folders": [
+      "core/",
+      "core/entities/",
+      "core/value_objects/",
+      "core/interfaces/",
+      "use_cases/",
+      "infrastructure/api_clients/",
+      "infrastructure/repositories/",
+      "infrastructure/db/",
+      "services/",
+      "normalization/",
+      "config/",
+      "scripts/",
+      "utils/"
+    ]
+  },
+  "required_components": [
+    "PagodaEntity (Pydantic model)",
+    "ProvinceNormalizer (old → new mapping)",
+    "AddressNormalizer",
+    "GoogleMapsClient",
+    "PagodaRepository (JSON/MongoDB output)",
+    "CrawlerService",
+    "ConfigLoader",
+    "Logger",
+    "RetryMiddleware",
+    "ProvinceIterator"
+  },
+  "constraints": [
+    "No hard-coded API keys; must use config file.",
+    "All modules must follow SOLID principles.",
+    "No fat controllers; logic must be in use cases.",
+    "Support future expansion to multi-source crawling.",
+    "Avoid large monolithic files."
+  },
+  "output": {
+    "deliverables": [
+      "Folder structure",
+      "Class diagram (text-based)",
+      "Architecture explanation",
+      "Python skeleton code for each component",
+      "Example Google Maps crawler implementation",
+      "Runner script inside project_location"
+    ],
+    "format": "Clean, structured, ready-to-run architecture + code skeleton."
+  }
+}
