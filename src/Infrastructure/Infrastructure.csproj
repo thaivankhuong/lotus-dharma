@@ -23,6 +23,7 @@
     <!--#endif-->
     <!--#if (UsePostgreSQL)-->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" />
     <!--#endif-->
     <!--#if (UseSqlite)-->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
@@ -37,6 +38,7 @@
     </PackageReference>
     <PackageReference Include="StackExchange.Redis" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="NetTopologySuite" />
     <PackageReference Include="Google.Apis.Auth" />
   </ItemGroup>
 

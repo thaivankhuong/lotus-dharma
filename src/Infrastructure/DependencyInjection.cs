@@ -30,7 +30,7 @@ public static class DependencyInjection
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
             // Sử dụng PostgreSQL
-            options.UseNpgsql(connectionString);
+            options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.UseNetTopologySuite());
         });
 
 #if (UseAspire)
