@@ -72,3 +72,4 @@ public class ProvinceConfiguration : IEntityTypeConfiguration<Province>
     }
 }
 
+
