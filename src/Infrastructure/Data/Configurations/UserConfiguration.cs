@@ -21,6 +21,18 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.PasswordHash)
             .IsRequired();
 
+        builder.Property(u => u.Provider)
+            .HasMaxLength(256);
+
+        builder.Property(u => u.ProviderId)
+            .HasMaxLength(256);
+
+        builder.Property(u => u.PictureUrl)
+            .HasMaxLength(500);
+
+        builder.Property(u => u.LastLoginAt)
+            .HasColumnType("timestamp with time zone");
+
         builder.Property(u => u.PhoneNumber)
             .HasMaxLength(50);
 

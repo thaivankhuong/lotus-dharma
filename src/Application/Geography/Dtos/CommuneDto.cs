@@ -1,9 +1,8 @@
 using System;
-using NetTopologySuite.Geometries;
 
-namespace LotusDharma.Domain.Entities;
+namespace LotusDharma.Application.Geography.Dtos;
 
-public class Commune
+public class CommuneDto
 {
     public string CommuneId { get; set; } = string.Empty;
     public string ProvinceId { get; set; } = string.Empty;
@@ -15,10 +14,8 @@ public class Commune
     public double? Longitude { get; set; }
     public double? Latitude { get; set; }
     public string? BeforeMerger { get; set; }
-    public MultiPolygon? Geometry { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    public Province Province { get; set; } = null!;
 }
 
 

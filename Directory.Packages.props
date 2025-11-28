@@ -74,6 +74,7 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="9.0.0" />
     <!--#endif-->
     <PackageVersion Include="NetTopologySuite" Version="2.6.0" />
+    <PackageVersion Include="NetTopologySuite.IO.GeoJSON" Version="3.0.0" />
     <!--#if (UseSqlite)-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EfcoreVersion)" />
     <!--#endif-->

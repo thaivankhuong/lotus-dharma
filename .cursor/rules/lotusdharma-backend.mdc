@@ -1,6 +1,0 @@
----
-alwaysApply: true
----
-This project is LotusDharma – a global Buddhism project.
-I am building the backend using .NET 9 with Clean Architecture (based on Jason Taylor).
-Cursor should follow SOLID and English-only rules defined in .cursor/rules/backend.rules.

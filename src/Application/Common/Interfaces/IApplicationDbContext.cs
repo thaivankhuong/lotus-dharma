@@ -12,6 +12,10 @@ public interface IApplicationDbContext
     
     DbSet<Category> Categories { get; }
 
+    DbSet<Province> Provinces { get; }
+
+    DbSet<Commune> Communes { get; }
+
     // Identity
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }

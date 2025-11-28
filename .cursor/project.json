@@ -1,75 +1,38 @@
 {
   "name": "LotusDharma Project",
-  "description": "A global Buddhism management and knowledge platform (Budda Project). This repository contains the backend and frontend systems following the Clean Architecture pattern.",
+  "description": "Backend API for Lotus Dharma using .NET 9 Clean Architecture.",
   "owner": "Khuong",
+
   "context": {
-    "primaryFocus": "Backend API development using .NET 9 (Clean Architecture by Jason Taylor)",
-    "secondaryFocus": "Frontend web app using React/Next.js for user interaction",
+    "primaryFocus": "Backend API (.NET 9, Clean Architecture)",
     "principles": [
-      "SOLID principles",
+      "SOLID",
       "Clean Architecture",
-      "CQRS + MediatR pattern",
-      "FluentValidation for input validation",
-      "English-only comments and code"
+      "CQRS + MediatR",
+      "FluentValidation",
+      "English-only code"
     ]
   },
+
   "structure": {
     "backend": {
       "path": "src/",
-      "projects": [
-        "Domain",
-        "Application",
-        "Infrastructure",
-        "API"
-      ],
-      "technologies": [
-        ".NET 9",
-        "Entity Framework Core",
-        "MediatR",
-        "FluentValidation",
-        "AutoMapper",
-        "JWT Authentication",
-        "Serilog"
-      ],
-      "rules": [
-        "backend.rules"
-      ]
-    },
-    "frontend": {
-      "path": "src/WebApp",
-      "technologies": [
-        "React",
-        "Next.js",
-        "TypeScript",
-        "TailwindCSS"
-      ],
-      "rules": [
-        "frontend.rules"
-      ]
+      "projects": ["Domain", "Application", "Infrastructure", "API"],
+      "rules": ["BackendRules.md"],
+      "limitScope": true
     }
   },
-  "codingConventions": {
-    "language": "English",
+
+  "conventions": {
     "naming": {
       "classes": "PascalCase",
-      "interfaces": "Prefix with 'I'",
-      "files": "Match class name",
-      "commandsQueries": "{Action}{Entity}Command / {Entity}Query"
-    },
-    "testing": {
-      "approach": "Unit and Integration tests",
-      "mocking": "Use in-memory DB or mocks instead of real DB"
+      "interfaces": "IName",
+      "files": "Match class name"
     }
   },
+
   "team": {
     "lead": "Khuong",
-    "role": "Senior Backend Developer",
-    "collaboration": "Cursor AI assists as a senior software architect following the project's rules"
-  },
-  "notes": [
-    "All comments, commits, and documentation must be in English.",
-    "Backend must strictly separate layers as per Clean Architecture.",
-    "No circular dependencies between projects.",
-    "Cursor AI should always generate code aligned with backend.rules."
-  ]
+    "assistant": "Cursor AI (Senior Architect mode)"
+  }
 }
