@@ -19,3 +19,4 @@ public class GetCommunesByBoundingBoxQueryValidator : AbstractValidator<GetCommu
 }
 
 
+
