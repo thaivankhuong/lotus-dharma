@@ -77,3 +77,4 @@ public class CommuneConfiguration : IEntityTypeConfiguration<Commune>
 }
 
 
+
