@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite;
 
 namespace LotusDharma.Application.Provinces.Queries.GetProvinceById;
 
-public sealed record GetProvinceByIdQuery(string ProvinceId, double? Simplify = null) : IRequest<ProvinceGeoDto>;
+public sealed record GetProvinceByIdQuery(int ProvinceId, double? Simplify = null) : IRequest<ProvinceGeoDto>;
 
 public class GetProvinceByIdQueryHandler : IRequestHandler<GetProvinceByIdQuery, ProvinceGeoDto>
 {
@@ -33,17 +33,17 @@ public class GetProvinceByIdQueryHandler : IRequestHandler<GetProvinceByIdQuery,
             FormattableString sql = $@"
             SELECT 
                 province_id,
+                admin_code,
                 name,
-                name_new,
                 administrative_center,
                 area_km2,
                 population,
                 longitude,
                 latitude,
                 before_merger,
-                administrative_units,
-                created_at,
-                updated_at,
+                administrative_units_info,
+                province_34_id,
+                province_code,
                 ST_SimplifyPreserveTopology(geometry, {tolerance}) AS geometry
             FROM provinces
             WHERE province_id = {request.ProvinceId}
@@ -59,11 +59,11 @@ public class GetProvinceByIdQueryHandler : IRequestHandler<GetProvinceByIdQuery,
         {
             province = await _context.Provinces
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.ProvinceId == request.ProvinceId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == request.ProvinceId, cancellationToken);
         }
 
         if (province is null)
-            throw new KeyNotFoundException(request.ProvinceId);
+            throw new KeyNotFoundException(request.ProvinceId.ToString());
 
         // Mapping sang DTO
         var dto = _mapper.Map<ProvinceGeoDto>(province);

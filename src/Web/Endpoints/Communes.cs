@@ -22,7 +22,7 @@ public class Communes : EndpointGroupBase
         return TypedResults.Ok(communes);
     }
 
-    public async Task<Results<Ok<CommuneGeoDto>, NotFound>> GetCommuneById(ISender sender, string id, [FromQuery] double? simplify)
+    public async Task<Results<Ok<CommuneGeoDto>, NotFound>> GetCommuneById(ISender sender, int id, [FromQuery] double? simplify)
     {
         try
         {

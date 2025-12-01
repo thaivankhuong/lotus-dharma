@@ -34,36 +34,36 @@ public sealed record GetProvincesByBoundingBoxQuery(
             var sql = tolerance > 0
                 ? FormattableStringFactory.Create(@"
 SELECT province_id,
+       admin_code,
        name,
-       name_new,
        administrative_center,
        area_km2,
        population,
        longitude,
        latitude,
        before_merger,
-       administrative_units,
-       ST_SimplifyPreserveTopology(geometry, {0}) AS geometry,
-       created_at,
-       updated_at
+       administrative_units_info,
+       province_34_id,
+       province_code,
+       ST_SimplifyPreserveTopology(geometry, {0}) AS geometry
 FROM provinces
 WHERE geometry && ST_MakeEnvelope({1}, {2}, {3}, {4}, 4326)
 ORDER BY name
 LIMIT {5}", tolerance, request.Xmin, request.Ymin, request.Xmax, request.Ymax, limit)
                 : FormattableStringFactory.Create(@"
 SELECT province_id,
+       admin_code,
        name,
-       name_new,
        administrative_center,
        area_km2,
        population,
        longitude,
        latitude,
        before_merger,
-       administrative_units,
-       geometry,
-       created_at,
-       updated_at
+       administrative_units_info,
+       province_34_id,
+       province_code,
+       geometry
 FROM provinces
 WHERE geometry && ST_MakeEnvelope({0}, {1}, {2}, {3}, 4326)
 ORDER BY name

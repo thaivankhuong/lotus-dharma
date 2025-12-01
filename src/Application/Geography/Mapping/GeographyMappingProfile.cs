@@ -8,7 +8,8 @@ public class GeographyMappingProfile : Profile
 {
     public GeographyMappingProfile()
     {
-        CreateMap<Province, ProvinceDto>();
+        CreateMap<Province, ProvinceDto>()
+            .ForMember(dest => dest.ProvinceId, opt => opt.MapFrom(src => src.Id));
         CreateMap<Province, ProvinceGeoDto>()
             .IncludeBase<Province, ProvinceDto>()
             .ForMember(dest => dest.Geometry, opt => opt.Ignore());

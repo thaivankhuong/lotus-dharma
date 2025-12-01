@@ -7,7 +7,7 @@ public class GetCommuneByIdQueryValidator : AbstractValidator<GetCommuneByIdQuer
     public GetCommuneByIdQueryValidator()
     {
         RuleFor(x => x.CommuneId)
-            .NotEmpty();
+            .GreaterThan(0);
 
         RuleFor(x => x.Simplify)
             .GreaterThanOrEqualTo(0)

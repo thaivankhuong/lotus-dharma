@@ -13,13 +13,25 @@ public class CommuneConfiguration : IEntityTypeConfiguration<Commune>
 
         builder.Property(x => x.CommuneId)
             .HasColumnName("commune_id")
-            .HasColumnType("text")
+            .HasColumnType("integer")
             .IsRequired();
 
         builder.Property(x => x.ProvinceId)
             .HasColumnName("province_id")
-            .HasColumnType("text")
+            .HasColumnType("integer")
             .IsRequired();
+
+        builder.Property(x => x.CommuneCode)
+            .HasColumnName("commune_code")
+            .HasColumnType("text");
+
+        builder.Property(x => x.Commune3321Id)
+            .HasColumnName("commune_3321_id")
+            .HasColumnType("text");
+
+        builder.Property(x => x.CommuneInternalId)
+            .HasColumnName("commune_internal_id")
+            .HasColumnType("text");
 
         builder.Property(x => x.Name)
             .HasColumnName("name")

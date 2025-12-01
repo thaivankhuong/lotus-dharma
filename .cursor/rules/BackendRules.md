@@ -53,3 +53,13 @@ Do NOT break existing APIs, models, migrations, naming, or architecture unless e
 
 ### Dependency Injection + Testing
 - All services must use DI  
+
+# RULE: All comments in source code must be written in English
+
+When Cursor AI creates or modifies any source code,
+it must always write all comments in English only.
+
+This includes:
+- Inline comments (// ...)
+- Block comments (/* ... */)
+- Documentation comments (/// or /** ... */)

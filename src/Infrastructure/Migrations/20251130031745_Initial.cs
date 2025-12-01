@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -8,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LotusDharma.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,19 +42,21 @@ namespace LotusDharma.Infrastructure.Migrations
                 name: "provinces",
                 columns: table => new
                 {
-                    province_id = table.Column<string>(type: "text", nullable: false),
+                    province_id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    admin_code = table.Column<int>(type: "integer", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    name_new = table.Column<string>(type: "text", nullable: true),
-                    administrative_center = table.Column<string>(type: "text", nullable: true),
-                    area_km2 = table.Column<double>(type: "double precision", nullable: true),
-                    population = table.Column<long>(type: "bigint", nullable: true),
-                    longitude = table.Column<double>(type: "double precision", nullable: true),
-                    latitude = table.Column<double>(type: "double precision", nullable: true),
-                    before_merger = table.Column<string>(type: "text", nullable: true),
-                    administrative_units = table.Column<string>(type: "text", nullable: true),
+                    area_km2 = table.Column<double>(type: "double precision", nullable: false),
+                    population = table.Column<long>(type: "bigint", nullable: false),
+                    administrative_center = table.Column<string>(type: "text", nullable: false),
+                    longitude = table.Column<double>(type: "double precision", nullable: false),
+                    latitude = table.Column<double>(type: "double precision", nullable: false),
+                    before_merger = table.Column<string>(type: "text", nullable: false),
+                    administrative_units_info = table.Column<string>(type: "text", nullable: false),
+                    province_34_id = table.Column<string>(type: "text", nullable: false),
+                    province_code = table.Column<string>(type: "text", nullable: false),
                     geometry = table.Column<MultiPolygon>(type: "geometry(MultiPolygon,4326)", nullable: true),
-                    created_at = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    updated_at = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Bbox = table.Column<List<double>>(type: "double precision[]", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -156,8 +159,12 @@ namespace LotusDharma.Infrastructure.Migrations
                 name: "communes",
                 columns: table => new
                 {
-                    commune_id = table.Column<string>(type: "text", nullable: false),
-                    province_id = table.Column<string>(type: "text", nullable: false),
+                    commune_id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    province_id = table.Column<int>(type: "integer", nullable: false),
+                    commune_code = table.Column<string>(type: "text", nullable: false),
+                    commune_3321_id = table.Column<string>(type: "text", nullable: false),
+                    commune_internal_id = table.Column<string>(type: "text", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     name_new = table.Column<string>(type: "text", nullable: true),
                     type = table.Column<string>(type: "text", nullable: true),
@@ -167,6 +174,7 @@ namespace LotusDharma.Infrastructure.Migrations
                     latitude = table.Column<double>(type: "double precision", nullable: true),
                     before_merger = table.Column<string>(type: "text", nullable: true),
                     geometry = table.Column<MultiPolygon>(type: "geometry(MultiPolygon,4326)", nullable: true),
+                    Bbox = table.Column<List<double>>(type: "double precision[]", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },

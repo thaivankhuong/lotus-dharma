@@ -22,7 +22,7 @@ public class Provinces : EndpointGroupBase
         return TypedResults.Ok(provinces);
     }
 
-    public async Task<Results<Ok<ProvinceGeoDto>, NotFound>> GetProvinceById(ISender sender, string id, [FromQuery] double? simplify)
+    public async Task<Results<Ok<ProvinceGeoDto>, NotFound>> GetProvinceById(ISender sender, int id, [FromQuery] double? simplify)
     {
         try
         {

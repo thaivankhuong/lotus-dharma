@@ -9,21 +9,22 @@ public class ProvinceConfiguration : IEntityTypeConfiguration<Province>
     public void Configure(EntityTypeBuilder<Province> builder)
     {
         builder.ToTable("provinces");
-        builder.HasKey(x => x.ProvinceId);
+        builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.ProvinceId)
+        builder.Property(x => x.Id)
             .HasColumnName("province_id")
-            .HasColumnType("text")
+            .HasColumnType("integer")
+            .IsRequired();
+
+        builder.Property(x => x.AdminCode)
+            .HasColumnName("admin_code")
+            .HasColumnType("integer")
             .IsRequired();
 
         builder.Property(x => x.Name)
             .HasColumnName("name")
             .HasColumnType("text")
             .IsRequired();
-
-        builder.Property(x => x.NameNew)
-            .HasColumnName("name_new")
-            .HasColumnType("text");
 
         builder.Property(x => x.AdministrativeCenter)
             .HasColumnName("administrative_center")
@@ -49,21 +50,21 @@ public class ProvinceConfiguration : IEntityTypeConfiguration<Province>
             .HasColumnName("before_merger")
             .HasColumnType("text");
 
-        builder.Property(x => x.AdministrativeUnits)
-            .HasColumnName("administrative_units")
+        builder.Property(x => x.AdministrativeUnitsInfo)
+            .HasColumnName("administrative_units_info")
+            .HasColumnType("text");
+
+        builder.Property(x => x.Province34Id)
+            .HasColumnName("province_34_id")
+            .HasColumnType("text");
+
+        builder.Property(x => x.ProvinceCode)
+            .HasColumnName("province_code")
             .HasColumnType("text");
 
         builder.Property(x => x.Geometry)
             .HasColumnName("geometry")
             .HasColumnType("geometry(MultiPolygon,4326)");
-
-        builder.Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
-            .HasColumnType("timestamp without time zone");
-
-        builder.Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
-            .HasColumnType("timestamp without time zone");
 
         builder.HasMany(x => x.Communes)
             .WithOne(x => x.Province)
