@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite;
 
 namespace LotusDharma.Application.Communes.Queries.GetCommuneById;
 
-public sealed record GetCommuneByIdQuery(string CommuneId, double? Simplify = null) : IRequest<CommuneGeoDto>;
+public sealed record GetCommuneByIdQuery(int CommuneId, double? Simplify = null) : IRequest<CommuneGeoDto>;
 
 public class GetCommuneByIdQueryHandler : IRequestHandler<GetCommuneByIdQuery, CommuneGeoDto>
 {
@@ -34,6 +34,9 @@ public class GetCommuneByIdQueryHandler : IRequestHandler<GetCommuneByIdQuery, C
             SELECT 
                 commune_id,
                 province_id,
+                commune_code,
+                commune_3321_id,
+                commune_internal_id,
                 name,
                 name_new,
                 type,
@@ -63,7 +66,7 @@ public class GetCommuneByIdQueryHandler : IRequestHandler<GetCommuneByIdQuery, C
         }
 
         if (commune is null)
-            throw new KeyNotFoundException(request.CommuneId);
+            throw new KeyNotFoundException(request.CommuneId.ToString());
 
         // Mapping DTO
         var dto = _mapper.Map<CommuneGeoDto>(commune);

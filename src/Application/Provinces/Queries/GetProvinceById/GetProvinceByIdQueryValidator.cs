@@ -7,7 +7,7 @@ public class GetProvinceByIdQueryValidator : AbstractValidator<GetProvinceByIdQu
     public GetProvinceByIdQueryValidator()
     {
         RuleFor(x => x.ProvinceId)
-            .NotEmpty();
+            .GreaterThan(0);
 
         RuleFor(x => x.Simplify)
             .GreaterThanOrEqualTo(0)

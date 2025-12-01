@@ -35,6 +35,9 @@ public class GetCommunesByBoundingBoxQueryHandler : IRequestHandler<GetCommunesB
             ? FormattableStringFactory.Create(@"
 SELECT commune_id,
        province_id,
+       commune_code,
+       commune_3321_id,
+       commune_internal_id,
        name,
        name_new,
        type,
@@ -53,6 +56,9 @@ LIMIT {5}", tolerance, request.Xmin, request.Ymin, request.Xmax, request.Ymax, l
             : FormattableStringFactory.Create(@"
 SELECT commune_id,
        province_id,
+       commune_code,
+       commune_3321_id,
+       commune_internal_id,
        name,
        name_new,
        type,

@@ -49,17 +49,17 @@ public class GetProvincesQueryHandler : IRequestHandler<GetProvincesQuery, List<
             FormattableString sql = $@"
             SELECT 
                 province_id,
+                admin_code,
                 name,
-                name_new,
                 administrative_center,
                 area_km2,
                 population,
                 longitude,
                 latitude,
                 before_merger,
-                administrative_units,
-                created_at,
-                updated_at,
+                administrative_units_info,
+                province_34_id,
+                province_code,
                 ST_SimplifyPreserveTopology(geometry, {tolerance}) AS geometry
             FROM provinces
             ORDER BY name

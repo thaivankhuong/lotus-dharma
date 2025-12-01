@@ -21,7 +21,7 @@ public sealed class ProvinceSearchSpecification
         var lowered = _search.ToLowerInvariant();
         return query.Where(p =>
             p.Name.ToLower().Contains(lowered) ||
-            (p.NameNew ?? string.Empty).ToLower().Contains(lowered));
+            p.AdministrativeUnitsInfo.ToLower().Contains(lowered));
     }
 }
 

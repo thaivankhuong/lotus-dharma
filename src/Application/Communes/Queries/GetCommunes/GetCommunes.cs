@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite;
 namespace LotusDharma.Application.Communes.Queries.GetCommunes;
 
 public sealed record GetCommunesQuery(
-    string? ProvinceId = null,
+    int? ProvinceId = null,
     string? Search = null,
     bool IncludeGeometry = false,
     double? Simplify = null,
@@ -39,8 +39,8 @@ public class GetCommunesQueryHandler : IRequestHandler<GetCommunesQuery, List<Co
         {
             var query = _context.Communes.AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(request.ProvinceId))
-                query = query.Where(c => c.ProvinceId == request.ProvinceId);
+            if (request.ProvinceId.HasValue)
+                query = query.Where(c => c.ProvinceId == request.ProvinceId.Value);
 
             query = new CommuneSearchSpecification(request.Search).Apply(query);
 
@@ -53,10 +53,17 @@ public class GetCommunesQueryHandler : IRequestHandler<GetCommunesQuery, List<Co
 
         if (tolerance > 0)
         {
+            var provinceClause = request.ProvinceId.HasValue
+                ? $"WHERE province_id = {request.ProvinceId.Value}"
+                : string.Empty;
+
             FormattableString sql = FormattableStringFactory.Create($@"
                 SELECT 
                     commune_id,
                     province_id,
+                    commune_code,
+                    commune_3321_id,
+                    commune_internal_id,
                     name,
                     name_new,
                     type,
@@ -69,7 +76,7 @@ public class GetCommunesQueryHandler : IRequestHandler<GetCommunesQuery, List<Co
                     updated_at,
                     ST_SimplifyPreserveTopology(geometry, {tolerance}) AS geometry
                 FROM communes
-                {(!string.IsNullOrWhiteSpace(request.ProvinceId) ? $"WHERE province_id = {request.ProvinceId}" : "")}
+                {provinceClause}
                 ORDER BY name
                 LIMIT {take};
             ");
@@ -88,8 +95,8 @@ public class GetCommunesQueryHandler : IRequestHandler<GetCommunesQuery, List<Co
 
         var normalQuery = _context.Communes.AsNoTracking();
 
-        if (!string.IsNullOrWhiteSpace(request.ProvinceId))
-            normalQuery = normalQuery.Where(c => c.ProvinceId == request.ProvinceId);
+        if (request.ProvinceId.HasValue)
+            normalQuery = normalQuery.Where(c => c.ProvinceId == request.ProvinceId.Value);
 
         normalQuery = new CommuneSearchSpecification(request.Search).Apply(normalQuery);
 
