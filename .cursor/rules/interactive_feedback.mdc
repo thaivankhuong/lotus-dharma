@@ -1,0 +1,41 @@
+---
+description: Enforce interactive feedback for all AI actions across all projects
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Global Interactive Feedback Rule
+
+To ensure safe and predictable AI behavior, all significant operations must use
+the interactive feedback MCP tool before proceeding.
+
+## 1. Before Asking Any Clarifying Question
+- The AI must call: `mcp_interactive-feedback-mcp_interactive_feedback`
+- Parameters:
+  - `project_directory`: Full absolute path of the workspace
+  - `summary`: Short explanation of what clarification is needed
+- Wait for the response before continuing.
+
+## 2. Before Completing Any Request (Writing, Editing, Refactoring)
+- The AI must again call: `mcp_interactive-feedback-mcp_interactive_feedback`
+- Include:
+  - `summary`: One-line description of what will be done or has been done
+- If the MCP response is empty → allowed to proceed automatically.
+- If feedback is provided → AI must revise according to the feedback.
+
+## 3. When Editing Files
+- AI must request confirmation *before modifying the workspace*.
+- This applies to:
+  - Creating files
+  - Editing existing files
+  - Deleting files
+  - Refactoring multiple files
+
+## 4. Examples of Correct Behavior
+
+### Before asking for more information:
+```json
+{
+  "project_directory": "/Users/Admin/Projects/MyApp",
+  "summary": "Need clarification about authentication flow"
+}

@@ -66,6 +66,11 @@ public class ProvinceConfiguration : IEntityTypeConfiguration<Province>
             .HasColumnName("geometry")
             .HasColumnType("geometry(MultiPolygon,4326)");
 
+
+        builder.Property(x => x.NameUnaccent)
+            .HasColumnName("name_unaccent")
+            .HasColumnType("text");
+
         builder.HasMany(x => x.Communes)
             .WithOne(x => x.Province)
             .HasForeignKey(x => x.ProvinceId)

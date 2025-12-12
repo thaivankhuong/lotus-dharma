@@ -1,0 +1,57 @@
+# Ignore everything by default
+*
+
+# Allow main source code folder
+!src/**
+
+# Allow solution files
+!*.sln
+!*.csproj
+!*.props
+!*.targets
+
+# Allow configurations used by development
+!.editorconfig
+!global.json
+
+# Ignore dev containers and environment setups
+.devcontainer/
+.azdo/
+.amazonqg/
+
+# Ignore artifacts / build output
+bin/
+obj/
+artifacts/
+out/
+dist/
+packages/
+
+# Ignore infrastructure folder (Terraform, scripts, IaC)
+infra/
+
+# Ignore template generators and scaffolding
+templates/
+
+
+# Ignore documentation folder (large and not needed for coding)
+docs/
+
+# Ignore version control metadata (safe)
+.git/
+.github/
+
+# Ignore secret files
+*.env
+*.env.*
+secrets/
+*.key
+*.pem
+*.pfx
+
+# Ignore log files
+*.log
+
+# Ignore OS/system files
+*.DS_Store
+Thumbs.db
