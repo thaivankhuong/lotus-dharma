@@ -30,3 +30,10 @@ public sealed class CommuneSearchSpecification
 
 
 
+
+
+
+
+
+
+

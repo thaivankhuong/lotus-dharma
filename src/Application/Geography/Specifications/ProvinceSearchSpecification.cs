@@ -1,4 +1,6 @@
 using LotusDharma.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace LotusDharma.Application.Geography.Specifications;
 
@@ -13,15 +15,16 @@ public sealed class ProvinceSearchSpecification
 
     public IQueryable<Province> Apply(IQueryable<Province> query)
     {
-        if (_search is null)
-        {
+        if (string.IsNullOrWhiteSpace(_search))
             return query;
-        }
 
-        var lowered = _search.ToLowerInvariant();
+        var keyword = _search!;
+
         return query.Where(p =>
-            p.Name.ToLower().Contains(lowered) ||
-            p.AdministrativeUnitsInfo.ToLower().Contains(lowered));
+                     EF.Functions.ILike(p.Name, $"%{keyword}%") ||
+                     EF.Functions.ILike(p.NameUnaccent ?? "", $"%{keyword}%") ||
+                     EF.Functions.TrigramsSimilarity(p.NameUnaccent ?? "", keyword) > 0.3
+                    );
     }
 }
 

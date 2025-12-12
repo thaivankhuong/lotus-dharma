@@ -22,3 +22,10 @@ public class GetProvincesByBoundingBoxQueryValidator : AbstractValidator<GetProv
 
 
 
+
+
+
+
+
+
+

@@ -28,8 +28,17 @@ public class Province
 
     public MultiPolygon? Geometry { get; set; }
     public List<double>? Bbox { get; set; }
+    public string? NameUnaccent { get; set; }
+
     public ICollection<Commune> Communes { get; set; } = new List<Commune>();
 }
+
+
+
+
+
+
+
 
 
 
