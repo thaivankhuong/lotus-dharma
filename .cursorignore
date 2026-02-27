@@ -1,47 +1,47 @@
-# Ignore everything by default
-*
+# ================================
+# Build / IDE artifacts
+# ================================
+**/bin/
+**/obj/
+**/TestResults/
+**/coverage*
+**/*.trx
 
-# Allow main source code folder
-!src/**
+# IDE folders
+**/.vs/
+**/.idea/
+**/.vscode/
 
-# Allow solution files
-!*.sln
-!*.csproj
-!*.props
-!*.targets
+# User-specific files
+**/*.user
+**/*.suo
+**/*.cache
+**/*.log
 
-# Allow configurations used by development
-!.editorconfig
-!global.json
-
-# Ignore dev containers and environment setups
+# ================================
+# Infrastructure / CI
+# ================================
+infra/
+templates/
 .devcontainer/
 .azdo/
 .amazonqg/
 
-# Ignore artifacts / build output
-bin/
-obj/
-artifacts/
-out/
-dist/
-packages/
-
-# Ignore infrastructure folder (Terraform, scripts, IaC)
-infra/
-
-# Ignore template generators and scaffolding
-templates/
-
-
-# Ignore documentation folder (large and not needed for coding)
+# ================================
+# Documentation (optional)
+# ================================
 docs/
+tasks/
 
-# Ignore version control metadata (safe)
+# ================================
+# Git metadata
+# ================================
 .git/
 .github/
 
-# Ignore secret files
+# ================================
+# Secrets / Environment
+# ================================
 *.env
 *.env.*
 secrets/
@@ -49,9 +49,8 @@ secrets/
 *.pem
 *.pfx
 
-# Ignore log files
-*.log
-
-# Ignore OS/system files
+# ================================
+# OS files
+# ================================
 *.DS_Store
 Thumbs.db
