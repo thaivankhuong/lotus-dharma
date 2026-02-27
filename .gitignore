@@ -480,3 +480,10 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 .azure
+/.amazonq/prompts
+/openspec
+/.openspec
+/AGENTS.md
+/.cursor/commands
+/docs/ai
+/.ai-devkit.json

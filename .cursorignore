@@ -1,0 +1,26 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/.vscode/
+**/node_modules/
+**/*.user
+**/*.suo
+**/*.cache
+**/*.log
+
+# generated / build artifacts
+**/TestResults/
+**/coverage*
+**/*.trx
+
+# infra & pipelines (theo LimitScope)
+infra/
+templates/
+.github/
+.azdo/
+.devcontainer/
+
+# docs (chỉ mở khi bạn @file)
+docs/
+tasks/

@@ -17,7 +17,7 @@
   "structure": {
     "backend": {
       "path": "src/",
-      "projects": ["Domain", "Application", "Infrastructure", "API"],
+      "projects": ["Domain", "Application", "Infrastructure", "Web"],
       "rules": ["BackendRules.md"],
       "limitScope": true
     }
