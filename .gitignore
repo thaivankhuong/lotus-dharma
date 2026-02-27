@@ -483,7 +483,17 @@ $RECYCLE.BIN/
 /.amazonq/prompts
 /openspec
 /.openspec
-/AGENTS.md
+# Vim temporary swap files
+*.swp
+
+# Azure / tooling
+.azure
+/.amazonq/prompts
+/openspec
+/.openspec
+
+# AI / Cursor tooling (local-only)
+# NOTE: do NOT ignore general *.md files in the repo
 /.cursor/commands
 /docs/ai
 /.ai-devkit.json

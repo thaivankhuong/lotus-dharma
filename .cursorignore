@@ -1,26 +1,56 @@
+# ================================
+# Build / IDE artifacts
+# ================================
 **/bin/
 **/obj/
+**/TestResults/
+**/coverage*
+**/*.trx
+
+# IDE folders
 **/.vs/
 **/.idea/
 **/.vscode/
-**/node_modules/
+
+# User-specific files
 **/*.user
 **/*.suo
 **/*.cache
 **/*.log
 
-# generated / build artifacts
-**/TestResults/
-**/coverage*
-**/*.trx
-
-# infra & pipelines (theo LimitScope)
+# ================================
+# Infrastructure / CI
+# ================================
 infra/
 templates/
-.github/
-.azdo/
 .devcontainer/
+.azdo/
+.amazonqg/
 
-# docs (chỉ mở khi bạn @file)
+# ================================
+# Documentation (optional)
+# ================================
 docs/
 tasks/
+
+# ================================
+# Git metadata
+# ================================
+.git/
+.github/
+
+# ================================
+# Secrets / Environment
+# ================================
+*.env
+*.env.*
+secrets/
+*.key
+*.pem
+*.pfx
+
+# ================================
+# OS files
+# ================================
+*.DS_Store
+Thumbs.db
