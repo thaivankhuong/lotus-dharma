@@ -484,3 +484,5 @@ $RECYCLE.BIN/
 /openspec
 /.openspec
 *.md
+!AGENTS.md
+!README.md
