@@ -35,6 +35,9 @@ app.UseHealthChecks("/health");
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Enable CORS
+app.UseCors("AllowFrontend");
+
 app.UseExceptionHandler(options => { });
 
 // Enable authentication & authorization middleware
