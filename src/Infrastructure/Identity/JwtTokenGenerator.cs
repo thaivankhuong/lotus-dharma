@@ -32,7 +32,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
-        // Thêm roles vào claims
+        // Add roles to claims
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));

@@ -11,7 +11,7 @@ public record CreateProductCommand : IRequest<int>
     public decimal Price { get; init; }
     public int Stock { get; init; }
     public int CategoryId { get; init; }
-    // CreatedIdUser sẽ tự động lấy từ JWT claims (không cần truyền từ client)
+    // CreatedIdUser will be automatically taken from JWT claims (no need to pass from client)
 }
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, int>
@@ -34,7 +34,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             Price = request.Price,
             Stock = request.Stock,
             CategoryId = request.CategoryId,
-            CreatedIdUser = _user.Id,  // Tự động lấy UserId từ JWT claims
+            CreatedIdUser = _user.Id,  // Automatically get UserId from JWT claims
             IsActive = true
         };
 

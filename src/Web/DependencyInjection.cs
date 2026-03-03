@@ -50,7 +50,7 @@ public static class DependencyInjection
         {
             configure.Title = "🪷 Lotus Dharma API";
             configure.Description = @"
-                        ## Authentication với JWT Bearer Token
+                        ## Authentication with JWT Bearer Token
                         POST /api/identity/login
                         {
                           ""email"": ""admin@example.com"",
@@ -58,16 +58,16 @@ public static class DependencyInjection
                         }
                         ";
 
-            // Thêm JWT Bearer Authentication cho Swagger
+            // Add JWT Bearer Authentication for Swagger
             configure.AddSecurity("Bearer", Enumerable.Empty<string>(), new OpenApiSecurityScheme
             {
                 Type = OpenApiSecuritySchemeType.Http,
                 Scheme = "bearer",
                 BearerFormat = "JWT",
-                Description = "Nhập JWT Bearer token"
+                Description = "Input JWT Bearer token"
             });
 
-            // Thêm security requirement cho tất cả endpoints (trừ AllowAnonymous)
+            // Add security requirement for all endpoints (except AllowAnonymous)
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
     }

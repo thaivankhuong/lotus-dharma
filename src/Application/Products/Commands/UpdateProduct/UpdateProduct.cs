@@ -11,7 +11,7 @@ public record UpdateProductCommand : IRequest
     public int Stock { get; init; }
     public int CategoryId { get; init; }
     public bool IsActive { get; init; }
-    // UpdatedIdUser sẽ tự động lấy từ JWT claims (không cần truyền từ client)
+    // UpdatedIdUser will be automatically taken from JWT claims (no need to pass from client)
 }
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
@@ -25,12 +25,12 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         _user = user;
     }
     
-    // Handle method ý nghĩa:
-    // - Xử lý lệnh cập nhật thông tin sản phẩm (UpdateProductCommand)
-    // - Tìm sản phẩm theo Id, nếu không thấy thì throw not found exception
-    // - Cập nhật các trường: Name, Description, Price, Stock, CategoryId, IsActive
-    // - Tự động gán trường UpdatedIdUser = UserId từ JWT claims (không cần client truyền lên)
-    // - Ghi nhận thay đổi vào database (SaveChangesAsync)
+    // Handle method purpose:
+    // - Process product update command (UpdateProductCommand)
+    // - Find product by Id, throw not found exception if not found
+    // - Update fields: Name, Description, Price, Stock, CategoryId, IsActive
+    // - Automatically assign UpdatedIdUser = UserId from JWT claims
+    // - Save changes to database (SaveChangesAsync)
 
     public async Task Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -44,7 +44,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         entity.Price = request.Price;
         entity.Stock = request.Stock;
         entity.CategoryId = request.CategoryId;
-        entity.UpdatedIdUser = _user.Id;  // Tự động lấy UserId từ JWT claims
+        entity.UpdatedIdUser = _user.Id;  // Automatically get UserId from JWT claims
         entity.IsActive = request.IsActive;
 
         await _context.SaveChangesAsync(cancellationToken);

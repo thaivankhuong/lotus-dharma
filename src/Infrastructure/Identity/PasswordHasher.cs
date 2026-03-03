@@ -17,14 +17,14 @@ public class PasswordHasher : IPasswordHasher
 
     public string HashPassword(string password)
     {
-        // Tạo salt
+        // Create salt
         byte[] salt = new byte[SaltSize];
         using (var rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(salt);
         }
 
-        // Hash password với salt
+        // Hash password with salt
         byte[] hash = KeyDerivation.Pbkdf2(
             password: password,
             salt: salt,
@@ -32,7 +32,7 @@ public class PasswordHasher : IPasswordHasher
             iterationCount: Iterations,
             numBytesRequested: HashSize);
 
-        // Kết hợp salt và hash
+        // Combine salt and hash
         byte[] hashBytes = new byte[SaltSize + HashSize];
         Array.Copy(salt, 0, hashBytes, 0, SaltSize);
         Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
@@ -44,14 +44,14 @@ public class PasswordHasher : IPasswordHasher
     {
         try
         {
-            // Lấy hashBytes từ stored password
+            // Get hashBytes from stored password
             byte[] hashBytes = Convert.FromBase64String(hashedPassword);
 
             // Extract salt
             byte[] salt = new byte[SaltSize];
             Array.Copy(hashBytes, 0, salt, 0, SaltSize);
 
-            // Hash provided password với salt
+            // Hash provided password with salt
             byte[] hash = KeyDerivation.Pbkdf2(
                 password: providedPassword,
                 salt: salt,
@@ -59,7 +59,7 @@ public class PasswordHasher : IPasswordHasher
                 iterationCount: Iterations,
                 numBytesRequested: HashSize);
 
-            // So sánh hash
+            // Compare hash
             for (int i = 0; i < HashSize; i++)
             {
                 if (hashBytes[i + SaltSize] != hash[i])

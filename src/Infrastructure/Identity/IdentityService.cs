@@ -38,7 +38,7 @@ public class IdentityService : IIdentityService
 
     public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
     {
-        // Kiểm tra user đã tồn tại chưa
+        // Check if user already exists
         var existingUser = await _context.Users
             .FirstOrDefaultAsync(u => u.UserName == userName || u.Email == userName);
 
@@ -87,7 +87,7 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        // Tạo claims principal từ user
+        // Create claims principal from user
         var claims = await GetUserClaimsAsync(user);
         var identity = new System.Security.Claims.ClaimsIdentity(claims, "Custom");
         var principal = new System.Security.Claims.ClaimsPrincipal(identity);
@@ -115,7 +115,7 @@ public class IdentityService : IIdentityService
 
     public async Task<LoginResult?> LoginAsync(string email, string password)
     {
-        // Tìm user theo email
+        // Find user by email
         var user = await _context.Users
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
@@ -124,18 +124,18 @@ public class IdentityService : IIdentityService
         if (user == null)
             return null;
 
-        // Kiểm tra password
+        // Check password
         if (!_passwordHasher.VerifyPassword(user.PasswordHash, password))
             return null;
 
-        // Lấy roles
+        // Get roles
         var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
 
         // Generate JWT token
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
         var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
-        // Lưu token vào database
+        // Save token to database
         var userToken = new UserToken
         {
             UserId = user.Id,
@@ -170,7 +170,7 @@ public class IdentityService : IIdentityService
             new(System.Security.Claims.ClaimTypes.Email, user.Email),
         };
 
-        // Lấy roles của user
+        // Get user roles
         var roles = await _context.UserRoles
             .Include(ur => ur.Role)
             .Where(ur => ur.UserId == user.Id)

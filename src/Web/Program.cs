@@ -73,7 +73,7 @@ app.Map("/", () => Results.Redirect("/api"));
 app.MapDefaultEndpoints();
 #endif
 app.MapEndpoints();
-// DEBUG: In ra tất cả endpoint groups
+// DEBUG: Print all endpoint groups
 Console.WriteLine("=== REGISTERED ENDPOINT GROUPS ===");
 var assembly = typeof(Program).Assembly;
 var endpointGroupType = typeof(EndpointGroupBase);

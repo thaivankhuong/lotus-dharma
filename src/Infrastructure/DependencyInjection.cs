@@ -30,7 +30,7 @@ public static class DependencyInjection
         builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
-            // Sử dụng PostgreSQL
+            // Use PostgreSQL
             options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.UseNetTopologySuite());
         });
 
@@ -42,14 +42,14 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
-        // Thêm Custom Identity Services
+        // Add Custom Identity Services
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         builder.Services.AddTransient<IIdentityService, IdentityService>();
         // Google authentication service
         builder.Services.AddScoped<LotusDharma.Application.Common.Interfaces.IGoogleAuthService, LotusDharma.Infrastructure.Services.GoogleAuthService>();
 
-        // Cấu hình JWT Authentication
+        // Configure JWT Authentication
         var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
         var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "LotusDharma";
         var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "LotusDharma";
