@@ -1,4 +1,5 @@
-﻿using LotusDharma.Application.Common.Interfaces;
+using LotusDharma.Application.Common.Caching;
+using LotusDharma.Application.Common.Interfaces;
 using LotusDharma.Domain.Events.Products;
 
 namespace LotusDharma.Application.Products.Commands.DeleteProduct;
@@ -7,10 +8,12 @@ public record DeleteProductCommand(int Id) : IRequest;
 public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICacheService _cache;
 
-    public DeleteProductCommandHandler(IApplicationDbContext context)
+    public DeleteProductCommandHandler(IApplicationDbContext context, ICacheService cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task Handle(DeleteProductCommand request, CancellationToken cancellationToken)
@@ -25,5 +28,7 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand>
         entity.AddDomainEvent(new ProductDeletedEvent(entity));
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _cache.RemoveByPatternAsync(CacheKeys.Patterns.AllProducts, cancellationToken);
     }
 }

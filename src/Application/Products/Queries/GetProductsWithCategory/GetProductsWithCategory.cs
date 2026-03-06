@@ -24,7 +24,7 @@ public class GetProductsWithCategoryQueryHandler : IRequestHandler<GetProductsWi
 
     public async Task<List<ProductWithCategoryDto>> Handle(GetProductsWithCategoryQuery request, CancellationToken cancellationToken)
     {
-        // ✨ CÁCH 1: Dùng Navigation Property + Select (KHUYÊN DÙNG - SQL tốt nhất)
+        // ✨ OPTION 1: Use Navigation Property + Select (RECOMMENDED - Best SQL)
         var query = _context.Products
             .AsNoTracking()
             .Where(p => p.IsActive);
@@ -48,7 +48,7 @@ public class GetProductsWithCategoryQueryHandler : IRequestHandler<GetProductsWi
                 Stock = p.Stock,
                 IsActive = p.IsActive,
                 CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name,  // ← Dùng Navigation Property
+                CategoryName = p.Category.Name,  // ← Use Navigation Property
                 CategoryDescription = p.Category.Description,
                 Created = p.Created,
                 LastModified = p.LastModified

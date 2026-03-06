@@ -8,24 +8,17 @@ using StackExchange.Redis;
 
 namespace LotusDharma.Infrastructure.Caching;
 
-/// <summary>
-/// Production-ready Redis cache service with:
-/// - Compression for large objects (60-80% bandwidth reduction)
-/// - Circuit breaker pattern for reliability
-/// - Metrics collection (hit/miss rates)
-/// - Stampede prevention with distributed locks
-/// - Graceful fallback when Redis is unavailable
-/// 
-/// Tested at scale: 5M+ concurrent users
-/// </summary>
 public class RedisCacheService : ICacheService
 {
     private readonly IConnectionMultiplexer _redis;
     private readonly IDatabase _db;
     private readonly ILogger<RedisCacheService> _logger;
     private readonly CacheOptions _options;
-    private readonly SemaphoreSlim _lock = new(1, 1);
-    
+
+    // Circuit breaker state
+    private int _consecutiveFailures;
+    private DateTime _circuitOpenedAt = DateTime.MinValue;
+
     // Metrics
     private long _hits;
     private long _misses;
@@ -44,6 +37,8 @@ public class RedisCacheService : ICacheService
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class
     {
+        if (IsCircuitOpen()) return null;
+
         try
         {
             var prefixedKey = GetPrefixedKey(key);
@@ -52,31 +47,28 @@ public class RedisCacheService : ICacheService
             if (value.IsNullOrEmpty)
             {
                 Interlocked.Increment(ref _misses);
-                LogCacheMiss(key);
                 return null;
             }
 
             Interlocked.Increment(ref _hits);
-            LogCacheHit(key);
-
+            RecordSuccess();
             return DeserializeValue<T>(value!);
         }
         catch (Exception ex)
         {
-            Interlocked.Increment(ref _errors);
-            _logger.LogError(ex, "Redis GET error for key: {Key}", key);
-            
-            // Graceful fallback - return null instead of throwing
+            RecordFailure(ex, "GET", key);
             return null;
         }
     }
 
     public async Task SetAsync<T>(
-        string key, 
-        T value, 
-        TimeSpan? expiry = null, 
+        string key,
+        T value,
+        TimeSpan? expiry = null,
         CancellationToken cancellationToken = default) where T : class
     {
+        if (IsCircuitOpen()) return;
+
         try
         {
             var prefixedKey = GetPrefixedKey(key);
@@ -84,41 +76,40 @@ public class RedisCacheService : ICacheService
             var expiryTime = expiry ?? TimeSpan.FromMinutes(_options.DefaultExpirationMinutes);
 
             await _db.StringSetAsync(prefixedKey, serialized, expiryTime);
-            
-            _logger.LogDebug("Cache SET: {Key}, Expiry: {Expiry}s", key, expiryTime.TotalSeconds);
+            RecordSuccess();
         }
         catch (Exception ex)
         {
-            Interlocked.Increment(ref _errors);
-            _logger.LogError(ex, "Redis SET error for key: {Key}", key);
-            
-            // Don't throw - caching failure should not break the app
+            RecordFailure(ex, "SET", key);
         }
     }
 
     public async Task<T> GetOrCreateAsync<T>(
-        string key, 
-        Func<Task<T>> factory, 
-        TimeSpan? expiry = null, 
+        string key,
+        Func<Task<T>> factory,
+        TimeSpan? expiry = null,
         CancellationToken cancellationToken = default) where T : class
     {
-        // Try get from cache first
-        var cached = await GetAsync<T>(key, cancellationToken);
-        if (cached != null)
-            return cached;
+        if (!IsCircuitOpen())
+        {
+            var cached = await GetAsync<T>(key, cancellationToken);
+            if (cached != null)
+                return cached;
+        }
 
-        // Use distributed lock to prevent cache stampede
         var lockKey = $"lock:{key}";
         var lockValue = Guid.NewGuid().ToString();
         var lockExpiry = TimeSpan.FromSeconds(10);
 
         try
         {
-            // Try to acquire distributed lock
+            if (IsCircuitOpen())
+                return await factory();
+
             var lockAcquired = await _db.StringSetAsync(
-                GetPrefixedKey(lockKey), 
-                lockValue, 
-                lockExpiry, 
+                GetPrefixedKey(lockKey),
+                lockValue,
+                lockExpiry,
                 When.NotExists
             );
 
@@ -126,121 +117,154 @@ public class RedisCacheService : ICacheService
             {
                 try
                 {
-                    // Double-check cache after acquiring lock
-                    cached = await GetAsync<T>(key, cancellationToken);
+                    var cached = await GetAsync<T>(key, cancellationToken);
                     if (cached != null)
                         return cached;
 
-                    // Create value
                     var value = await factory();
-                    
-                    // Set in cache
                     await SetAsync(key, value, expiry, cancellationToken);
-                    
                     return value;
                 }
                 finally
                 {
-                    // Release lock
                     await ReleaseLockAsync(lockKey, lockValue);
                 }
             }
             else
             {
-                // Another process is creating the value, wait a bit and retry
                 await Task.Delay(100, cancellationToken);
-                
-                cached = await GetAsync<T>(key, cancellationToken);
+
+                var cached = await GetAsync<T>(key, cancellationToken);
                 if (cached != null)
                     return cached;
 
-                // If still not in cache, create it anyway (fallback)
                 return await factory();
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "GetOrCreate error for key: {Key}", key);
-            
-            // Fallback: create value without caching
             return await factory();
         }
     }
 
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
+        if (IsCircuitOpen()) return;
+
         try
         {
             var prefixedKey = GetPrefixedKey(key);
             await _db.KeyDeleteAsync(prefixedKey);
-            
-            _logger.LogDebug("Cache REMOVE: {Key}", key);
+            RecordSuccess();
         }
         catch (Exception ex)
         {
-            Interlocked.Increment(ref _errors);
-            _logger.LogError(ex, "Redis REMOVE error for key: {Key}", key);
+            RecordFailure(ex, "REMOVE", key);
         }
     }
 
     public async Task RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
     {
+        if (IsCircuitOpen()) return;
+
         try
         {
             var prefixedPattern = GetPrefixedKey(pattern);
             var endpoints = _redis.GetEndPoints();
             var server = _redis.GetServer(endpoints.First());
-            
+
             var keys = server.Keys(pattern: prefixedPattern, pageSize: 1000)
-                .Take(10000) // Safety limit
+                .Take(10000)
                 .ToArray();
 
-            if (keys.Any())
+            if (keys.Length > 0)
             {
                 await _db.KeyDeleteAsync(keys);
                 _logger.LogInformation("Cache REMOVE by pattern: {Pattern}, Count: {Count}", pattern, keys.Length);
             }
+
+            RecordSuccess();
         }
         catch (Exception ex)
         {
-            Interlocked.Increment(ref _errors);
-            _logger.LogError(ex, "Redis REMOVE by pattern error: {Pattern}", pattern);
+            RecordFailure(ex, "REMOVE_PATTERN", pattern);
         }
     }
 
     public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
     {
+        if (IsCircuitOpen()) return false;
+
         try
         {
             var prefixedKey = GetPrefixedKey(key);
-            return await _db.KeyExistsAsync(prefixedKey);
+            var result = await _db.KeyExistsAsync(prefixedKey);
+            RecordSuccess();
+            return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis EXISTS error for key: {Key}", key);
+            RecordFailure(ex, "EXISTS", key);
             return false;
         }
     }
 
     public async Task RefreshAsync(string key, TimeSpan expiry, CancellationToken cancellationToken = default)
     {
+        if (IsCircuitOpen()) return;
+
         try
         {
             var prefixedKey = GetPrefixedKey(key);
             await _db.KeyExpireAsync(prefixedKey, expiry);
+            RecordSuccess();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis REFRESH error for key: {Key}", key);
+            RecordFailure(ex, "REFRESH", key);
         }
     }
 
-    // Helper methods
-
-    private string GetPrefixedKey(string key)
+    private bool IsCircuitOpen()
     {
-        return $"{_options.KeyPrefix}{key}";
+        if (!_options.EnableCircuitBreaker) return false;
+
+        if (_consecutiveFailures >= _options.CircuitBreakerFailureThreshold)
+        {
+            var elapsed = DateTime.UtcNow - _circuitOpenedAt;
+            if (elapsed.TotalSeconds < _options.CircuitBreakerDurationSeconds)
+            {
+                return true;
+            }
+
+            // Half-open: allow one attempt through
+            Interlocked.Exchange(ref _consecutiveFailures, _options.CircuitBreakerFailureThreshold - 1);
+        }
+
+        return false;
     }
+
+    private void RecordSuccess()
+    {
+        Interlocked.Exchange(ref _consecutiveFailures, 0);
+    }
+
+    private void RecordFailure(Exception ex, string operation, string key)
+    {
+        Interlocked.Increment(ref _errors);
+        var failures = Interlocked.Increment(ref _consecutiveFailures);
+
+        if (failures == _options.CircuitBreakerFailureThreshold)
+        {
+            _circuitOpenedAt = DateTime.UtcNow;
+            _logger.LogWarning("Redis circuit breaker OPENED after {Count} consecutive failures", failures);
+        }
+
+        _logger.LogError(ex, "Redis {Operation} error for key: {Key}", operation, key);
+    }
+
+    private string GetPrefixedKey(string key) => $"{_options.KeyPrefix}{key}";
 
     private async Task ReleaseLockAsync(string lockKey, string lockValue)
     {
@@ -254,8 +278,8 @@ public class RedisCacheService : ICacheService
                 end";
 
             await _db.ScriptEvaluateAsync(
-                script, 
-                new RedisKey[] { GetPrefixedKey(lockKey) }, 
+                script,
+                new RedisKey[] { GetPrefixedKey(lockKey) },
                 new RedisValue[] { lockValue }
             );
         }
@@ -270,7 +294,6 @@ public class RedisCacheService : ICacheService
         var json = JsonSerializer.Serialize(value);
         var bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
-        // Compress if enabled and size is above threshold
         if (_options.EnableCompression && bytes.Length > _options.CompressionThresholdBytes)
         {
             return Compress(bytes);
@@ -281,7 +304,6 @@ public class RedisCacheService : ICacheService
 
     private T? DeserializeValue<T>(byte[] bytes)
     {
-        // Try decompress first
         if (_options.EnableCompression)
         {
             try
@@ -298,7 +320,7 @@ public class RedisCacheService : ICacheService
         return JsonSerializer.Deserialize<T>(json);
     }
 
-    private byte[] Compress(byte[] data)
+    private static byte[] Compress(byte[] data)
     {
         using var output = new MemoryStream();
         using (var gzip = new GZipStream(output, CompressionLevel.Fastest))
@@ -308,7 +330,7 @@ public class RedisCacheService : ICacheService
         return output.ToArray();
     }
 
-    private byte[] Decompress(byte[] data)
+    private static byte[] Decompress(byte[] data)
     {
         using var input = new MemoryStream(data);
         using var gzip = new GZipStream(input, CompressionMode.Decompress);
@@ -317,35 +339,10 @@ public class RedisCacheService : ICacheService
         return output.ToArray();
     }
 
-    private void LogCacheHit(string key)
-    {
-        if (_options.EnableMetrics)
-        {
-            var hitRate = GetHitRate();
-            _logger.LogTrace("Cache HIT: {Key}, Hit Rate: {HitRate:P1}", key, hitRate);
-        }
-    }
-
-    private void LogCacheMiss(string key)
-    {
-        if (_options.EnableMetrics)
-        {
-            var hitRate = GetHitRate();
-            _logger.LogTrace("Cache MISS: {Key}, Hit Rate: {HitRate:P1}", key, hitRate);
-        }
-    }
-
-    private double GetHitRate()
-    {
-        var total = _hits + _misses;
-        return total == 0 ? 0 : (double)_hits / total;
-    }
-
-    // Public method to get metrics (for monitoring/dashboard)
     public (long Hits, long Misses, long Errors, double HitRate) GetMetrics()
     {
-        var hitRate = GetHitRate();
+        var total = _hits + _misses;
+        var hitRate = total == 0 ? 0 : (double)_hits / total;
         return (_hits, _misses, _errors, hitRate);
     }
 }
-

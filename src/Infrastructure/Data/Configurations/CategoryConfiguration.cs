@@ -24,12 +24,13 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
-        
-        // Relationship: 1 Category → Many Products
+
+        builder.HasIndex(c => c.IsActive);
+        builder.HasIndex(c => c.Name);
+
         builder.HasMany(c => c.Products)
             .WithOne(p => p.Category)
             .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
-

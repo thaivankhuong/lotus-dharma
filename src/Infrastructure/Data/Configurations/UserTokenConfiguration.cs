@@ -22,10 +22,10 @@ public class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
         builder.Property(ut => ut.UserAgent)
             .HasMaxLength(500);
 
-        // Index để tìm kiếm token nhanh
         builder.HasIndex(ut => ut.Token);
         builder.HasIndex(ut => ut.RefreshToken);
         builder.HasIndex(ut => ut.UserId);
+        builder.HasIndex(ut => ut.RefreshTokenExpiry)
+            .HasDatabaseName("IX_UserTokens_RefreshTokenExpiry");
     }
 }
-

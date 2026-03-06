@@ -4,26 +4,33 @@ using LotusDharma.Domain.Entities;
 using LotusDharma.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LotusDharma.Infrastructure.Identity;
 
 public class IdentityService : IIdentityService
 {
+    private const int MaxFailedAttempts = 5;
+    private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+
     private readonly ApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IAuthorizationService _authorizationService;
+    private readonly ILogger<IdentityService> _logger;
 
     public IdentityService(
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         IJwtTokenGenerator jwtTokenGenerator,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        ILogger<IdentityService> logger)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
         _authorizationService = authorizationService;
+        _logger = logger;
     }
 
     public async Task<string?> GetUserNameAsync(string userId)
@@ -38,7 +45,6 @@ public class IdentityService : IIdentityService
 
     public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
     {
-        // Kiểm tra user đã tồn tại chưa
         var existingUser = await _context.Users
             .FirstOrDefaultAsync(u => u.UserName == userName || u.Email == userName);
 
@@ -87,7 +93,6 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        // Tạo claims principal từ user
         var claims = await GetUserClaimsAsync(user);
         var identity = new System.Security.Claims.ClaimsIdentity(claims, "Custom");
         var principal = new System.Security.Claims.ClaimsPrincipal(identity);
@@ -115,7 +120,6 @@ public class IdentityService : IIdentityService
 
     public async Task<LoginResult?> LoginAsync(string email, string password)
     {
-        // Tìm user theo email
         var user = await _context.Users
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
@@ -124,29 +128,39 @@ public class IdentityService : IIdentityService
         if (user == null)
             return null;
 
-        // Kiểm tra password
-        if (!_passwordHasher.VerifyPassword(user.PasswordHash, password))
+        if (IsLockedOut(user))
+        {
+            _logger.LogWarning("Login attempt for locked-out account: {Email}", email);
             return null;
+        }
 
-        // Lấy roles
+        if (!_passwordHasher.VerifyPassword(user.PasswordHash, password))
+        {
+            await RecordFailedLoginAsync(user);
+            return null;
+        }
+
+        await ResetAccessFailedCountAsync(user);
+
         var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
 
-        // Generate JWT token
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
         var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
 
-        // Lưu token vào database
         var userToken = new UserToken
         {
             UserId = user.Id,
             Token = token,
             RefreshToken = refreshToken,
-            TokenExpiry = DateTimeOffset.UtcNow.AddHours(24),
+            TokenExpiry = DateTimeOffset.UtcNow.AddHours(1),
             RefreshTokenExpiry = DateTimeOffset.UtcNow.AddDays(7),
             IsRevoked = false
         };
 
         _context.UserTokens.Add(userToken);
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+
         await _context.SaveChangesAsync(default);
 
         return new LoginResult
@@ -161,6 +175,37 @@ public class IdentityService : IIdentityService
         };
     }
 
+    private static bool IsLockedOut(User user)
+    {
+        return user.LockoutEnabled
+               && user.LockoutEnd.HasValue
+               && user.LockoutEnd > DateTimeOffset.UtcNow;
+    }
+
+    private async Task RecordFailedLoginAsync(User user)
+    {
+        user.AccessFailedCount++;
+
+        if (user.LockoutEnabled && user.AccessFailedCount >= MaxFailedAttempts)
+        {
+            user.LockoutEnd = DateTimeOffset.UtcNow.Add(LockoutDuration);
+            _logger.LogWarning("Account locked out due to {Count} failed attempts: UserId={UserId}",
+                user.AccessFailedCount, user.Id);
+        }
+
+        await _context.SaveChangesAsync(default);
+    }
+
+    private async Task ResetAccessFailedCountAsync(User user)
+    {
+        if (user.AccessFailedCount > 0)
+        {
+            user.AccessFailedCount = 0;
+            user.LockoutEnd = null;
+            await _context.SaveChangesAsync(default);
+        }
+    }
+
     private async Task<List<System.Security.Claims.Claim>> GetUserClaimsAsync(User user)
     {
         var claims = new List<System.Security.Claims.Claim>
@@ -170,7 +215,6 @@ public class IdentityService : IIdentityService
             new(System.Security.Claims.ClaimTypes.Email, user.Email),
         };
 
-        // Lấy roles của user
         var roles = await _context.UserRoles
             .Include(ur => ur.Role)
             .Where(ur => ur.UserId == user.Id)

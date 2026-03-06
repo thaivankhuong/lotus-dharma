@@ -1,4 +1,5 @@
-﻿using LotusDharma.Application.Common.Interfaces;
+using LotusDharma.Application.Common.Caching;
+using LotusDharma.Application.Common.Interfaces;
 
 namespace LotusDharma.Application.Products.Commands.UpdateProduct;
 
@@ -11,26 +12,20 @@ public record UpdateProductCommand : IRequest
     public int Stock { get; init; }
     public int CategoryId { get; init; }
     public bool IsActive { get; init; }
-    // UpdatedIdUser sẽ tự động lấy từ JWT claims (không cần truyền từ client)
 }
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
+    private readonly ICacheService _cache;
 
-    public UpdateProductCommandHandler(IApplicationDbContext context, IUser user)
+    public UpdateProductCommandHandler(IApplicationDbContext context, IUser user, ICacheService cache)
     {
         _context = context;
         _user = user;
+        _cache = cache;
     }
-    
-    // Handle method ý nghĩa:
-    // - Xử lý lệnh cập nhật thông tin sản phẩm (UpdateProductCommand)
-    // - Tìm sản phẩm theo Id, nếu không thấy thì throw not found exception
-    // - Cập nhật các trường: Name, Description, Price, Stock, CategoryId, IsActive
-    // - Tự động gán trường UpdatedIdUser = UserId từ JWT claims (không cần client truyền lên)
-    // - Ghi nhận thay đổi vào database (SaveChangesAsync)
 
     public async Task Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -44,9 +39,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         entity.Price = request.Price;
         entity.Stock = request.Stock;
         entity.CategoryId = request.CategoryId;
-        entity.UpdatedIdUser = _user.Id;  // Tự động lấy UserId từ JWT claims
+        entity.UpdatedIdUser = _user.Id;
         entity.IsActive = request.IsActive;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _cache.RemoveByPatternAsync(CacheKeys.Patterns.AllProducts, cancellationToken);
     }
 }
