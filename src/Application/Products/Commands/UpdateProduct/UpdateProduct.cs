@@ -1,4 +1,5 @@
-﻿using LotusDharma.Application.Common.Interfaces;
+using LotusDharma.Application.Common.Caching;
+using LotusDharma.Application.Common.Interfaces;
 
 namespace LotusDharma.Application.Products.Commands.UpdateProduct;
 
@@ -11,26 +12,20 @@ public record UpdateProductCommand : IRequest
     public int Stock { get; init; }
     public int CategoryId { get; init; }
     public bool IsActive { get; init; }
-    // UpdatedIdUser will be automatically taken from JWT claims (no need to pass from client)
 }
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
+    private readonly ICacheService _cache;
 
-    public UpdateProductCommandHandler(IApplicationDbContext context, IUser user)
+    public UpdateProductCommandHandler(IApplicationDbContext context, IUser user, ICacheService cache)
     {
         _context = context;
         _user = user;
+        _cache = cache;
     }
-    
-    // Handle method purpose:
-    // - Process product update command (UpdateProductCommand)
-    // - Find product by Id, throw not found exception if not found
-    // - Update fields: Name, Description, Price, Stock, CategoryId, IsActive
-    // - Automatically assign UpdatedIdUser = UserId from JWT claims
-    // - Save changes to database (SaveChangesAsync)
 
     public async Task Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
@@ -44,9 +39,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand>
         entity.Price = request.Price;
         entity.Stock = request.Stock;
         entity.CategoryId = request.CategoryId;
-        entity.UpdatedIdUser = _user.Id;  // Automatically get UserId from JWT claims
+        entity.UpdatedIdUser = _user.Id;
         entity.IsActive = request.IsActive;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _cache.RemoveByPatternAsync(CacheKeys.Patterns.AllProducts, cancellationToken);
     }
 }

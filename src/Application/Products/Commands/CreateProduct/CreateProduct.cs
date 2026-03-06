@@ -1,4 +1,5 @@
-﻿using LotusDharma.Application.Common.Interfaces;
+using LotusDharma.Application.Common.Caching;
+using LotusDharma.Application.Common.Interfaces;
 using LotusDharma.Domain.Entities;
 using LotusDharma.Domain.Events.Products;
 
@@ -11,18 +12,19 @@ public record CreateProductCommand : IRequest<int>
     public decimal Price { get; init; }
     public int Stock { get; init; }
     public int CategoryId { get; init; }
-    // CreatedIdUser will be automatically taken from JWT claims (no need to pass from client)
 }
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, int>
 {
     private readonly IApplicationDbContext _context;
     private readonly IUser _user;
+    private readonly ICacheService _cache;
 
-    public CreateProductCommandHandler(IApplicationDbContext context, IUser user)
+    public CreateProductCommandHandler(IApplicationDbContext context, IUser user, ICacheService cache)
     {
         _context = context;
         _user = user;
+        _cache = cache;
     }
 
     public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
@@ -34,7 +36,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             Price = request.Price,
             Stock = request.Stock,
             CategoryId = request.CategoryId,
-            CreatedIdUser = _user.Id,  // Automatically get UserId from JWT claims
+            CreatedIdUser = _user.Id,
             IsActive = true
         };
 
@@ -43,6 +45,8 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _context.Products.Add(entity);
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _cache.RemoveByPatternAsync(CacheKeys.Patterns.AllProducts, cancellationToken);
 
         return entity.Id;
     }

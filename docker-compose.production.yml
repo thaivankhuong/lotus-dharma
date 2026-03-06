@@ -1,0 +1,75 @@
+version: '3.8'
+
+# Production reference architecture for 10M users
+# Deploy behind a reverse proxy (nginx/traefik) or cloud load balancer
+
+services:
+  api-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__LotusDharmaDb=${DATABASE_URL}
+      - ConnectionStrings__Redis=${REDIS_URL}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - CorsSettings__AllowedOrigins__0=${FRONTEND_URL}
+      - AZURE_KEY_VAULT_ENDPOINT=${KEY_VAULT_ENDPOINT}
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  postgres-primary:
+    image: postgis/postgis:16-3.4
+    environment:
+      - POSTGRES_DB=LotusDharmaDb
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres-primary-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '4.0'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d LotusDharmaDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+
+volumes:
+  postgres-primary-data:
+  redis-data:

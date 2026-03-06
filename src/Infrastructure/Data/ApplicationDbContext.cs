@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Reflection.Emit;
 using LotusDharma.Application.Common.Interfaces;
 using LotusDharma.Domain.Entities;
@@ -31,6 +31,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<UserRole> UserRoles => Set<UserRole>();
 
     public DbSet<UserToken> UserTokens => Set<UserToken>();
+
+    // Media
+    public DbSet<Speaker> Speakers => Set<Speaker>();
+    public DbSet<DharmaTalkSeries> DharmaTalkSeries => Set<DharmaTalkSeries>();
+    public DbSet<DharmaTalk> DharmaTalks => Set<DharmaTalk>();
+
+    // Outbox
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

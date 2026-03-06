@@ -20,8 +20,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateToken(User user, IEnumerable<string> roles)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            _configuration["JwtSettings:Secret"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!"));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecret()));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -32,17 +31,16 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
-        // Add roles to claims
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JwtSettings:Issuer"] ?? "LotusDharma",
-            audience: _configuration["JwtSettings:Audience"] ?? "LotusDharma",
+            issuer: GetIssuer(),
+            audience: GetAudience(),
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(double.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "24")),
+            expires: DateTime.UtcNow.AddHours(double.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "1")),
             signingCredentials: credentials
         );
 
@@ -51,7 +49,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateRefreshToken()
     {
-        var randomNumber = new byte[32];
+        var randomNumber = new byte[64];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
         return Convert.ToBase64String(randomNumber);
@@ -61,18 +59,19 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ValidateAudience = false,
-            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidAudience = GetAudience(),
+            ValidateIssuer = true,
+            ValidIssuer = GetIssuer(),
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration["JwtSettings:Secret"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!")),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecret())),
             ValidateLifetime = false
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || 
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new SecurityTokenException("Invalid token");
@@ -80,5 +79,11 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
         return principal;
     }
-}
 
+    private string GetSecret() =>
+        _configuration["JwtSettings:Secret"]
+        ?? throw new InvalidOperationException("JwtSettings:Secret is not configured. Use User Secrets or Key Vault.");
+
+    private string GetIssuer() => _configuration["JwtSettings:Issuer"] ?? "LotusDharma";
+    private string GetAudience() => _configuration["JwtSettings:Audience"] ?? "LotusDharma";
+}

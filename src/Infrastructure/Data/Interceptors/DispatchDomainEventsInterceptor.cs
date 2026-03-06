@@ -1,4 +1,4 @@
-﻿using LotusDharma.Domain.Common;
+using LotusDharma.Domain.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -14,19 +14,16 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         _mediator = mediator;
     }
 
-    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
+    public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
         DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult();
-
-        return base.SavingChanges(eventData, result);
-
+        return base.SavedChanges(eventData, result);
     }
 
-    public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    public override async ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
     {
         await DispatchDomainEvents(eventData.Context);
-
-        return await base.SavingChangesAsync(eventData, result, cancellationToken);
+        return await base.SavedChangesAsync(eventData, result, cancellationToken);
     }
 
     public async Task DispatchDomainEvents(DbContext? context)
@@ -36,13 +33,14 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         var entities = context.ChangeTracker
             .Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())
-            .Select(e => e.Entity);
+            .Select(e => e.Entity)
+            .ToList();
 
         var domainEvents = entities
             .SelectMany(e => e.DomainEvents)
             .ToList();
 
-        entities.ToList().ForEach(e => e.ClearDomainEvents());
+        entities.ForEach(e => e.ClearDomainEvents());
 
         foreach (var domainEvent in domainEvents)
             await _mediator.Publish(domainEvent);

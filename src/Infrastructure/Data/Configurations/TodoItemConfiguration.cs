@@ -1,4 +1,4 @@
-﻿using LotusDharma.Domain.Entities;
+using LotusDharma.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,5 +11,8 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
         builder.Property(t => t.Title)
             .HasMaxLength(200)
             .IsRequired();
+
+        builder.HasIndex(t => t.ListId);
+        builder.HasIndex(t => t.Done);
     }
 }

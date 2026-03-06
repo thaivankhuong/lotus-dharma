@@ -1,9 +1,10 @@
 using LotusDharma.Infrastructure.Data;
+using LotusDharma.Web.Infrastructure;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 #if (UseAspire)
 builder.AddServiceDefaults();
 #endif
@@ -14,7 +15,6 @@ builder.AddWebServices();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     await app.InitialiseDatabaseAsync();
@@ -25,39 +25,57 @@ else
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.MigrateAsync();
 
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+app.UseSecurityHeaders();
+
 #if (!UseAspire)
-app.UseHealthChecks("/health");
+app.MapHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+app.MapHealthChecks("/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 #endif
-//app.UseHttpsRedirection();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection(); // only use HTTPS redirection on Production
+}
+app.UseResponseCompression();
 app.UseStaticFiles();
 
-// Enable CORS
 app.UseCors("AllowFrontend");
+
+if (builder.Configuration.GetValue("RateLimiting:EnableRateLimiting", true))
+{
+    app.UseRateLimiter();
+}
 
 app.UseExceptionHandler(options => { });
 
-// Enable authentication & authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-// Serve OpenAPI/Swagger document
-app.UseOpenApi(options =>
+if (app.Environment.IsDevelopment())
 {
-    options.Path = "/api/specification-webapi.json";
-});
+    app.UseOpenApi(options =>
+    {
+        options.Path = "/api/specification-webapi.json";
+    });
 
-app.UseSwaggerUi(settings =>
-{
-    settings.Path = "/api";
-    settings.DocumentPath = "/api/specification-webapi.json";
-    settings.DocExpansion = "list";
-    settings.DefaultModelsExpandDepth = 1;
-});
+    app.UseSwaggerUi(settings =>
+    {
+        settings.Path = "/api";
+        settings.DocumentPath = "/api/specification-webapi.json";
+        settings.DocExpansion = "list";
+        settings.DefaultModelsExpandDepth = 1;
+    });
+}
 
 #if (!UseApiOnly)
 app.MapRazorPages();
@@ -73,20 +91,6 @@ app.Map("/", () => Results.Redirect("/api"));
 app.MapDefaultEndpoints();
 #endif
 app.MapEndpoints();
-// DEBUG: Print all endpoint groups
-Console.WriteLine("=== REGISTERED ENDPOINT GROUPS ===");
-var assembly = typeof(Program).Assembly;
-var endpointGroupType = typeof(EndpointGroupBase);
-var groups = assembly.GetExportedTypes()
-    .Where(t => t.IsSubclassOf(endpointGroupType))
-    .Select(t => t.Name)
-    .ToList();
-
-foreach (var group in groups)
-{
-    Console.WriteLine($"  ✓ {group}");
-}
-Console.WriteLine("==================================");
 
 app.Run();
 

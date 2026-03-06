@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__LotusDharmaDb=Host=postgres;Port=5432;Database=LotusDharmaDb;Username=lotus;Password=${DB_PASSWORD:-ChangeMe!}
+      - ConnectionStrings__Redis=redis:6379,abortConnect=false,connectTimeout=5000
+      - JwtSettings__Secret=${JWT_SECRET:-ChangeThisToASecureKeyAtLeast64CharsLongForHmacSha256Signing!!}
+      - JwtSettings__Issuer=LotusDharma
+      - JwtSettings__Audience=LotusDharma
+      - JwtSettings__ExpiryHours=1
+      - CorsSettings__AllowedOrigins__0=${FRONTEND_URL:-https://lotusdharma.com}
+      - BlobStorage__LocalPath=/app/storage
+    volumes:
+      - media-storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      - POSTGRES_DB=LotusDharmaDb
+      - POSTGRES_USER=lotus
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-ChangeMe!}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lotus -d LotusDharmaDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:
+  media-storage:

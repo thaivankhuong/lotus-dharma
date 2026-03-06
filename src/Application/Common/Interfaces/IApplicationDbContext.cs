@@ -1,4 +1,4 @@
-﻿using LotusDharma.Domain.Entities;
+using LotusDharma.Domain.Entities;
 
 namespace LotusDharma.Application.Common.Interfaces;
 
@@ -21,6 +21,14 @@ public interface IApplicationDbContext
     DbSet<Role> Roles { get; }
     DbSet<UserRole> UserRoles { get; }
     DbSet<UserToken> UserTokens { get; }
+
+    // Media
+    DbSet<Speaker> Speakers { get; }
+    DbSet<DharmaTalkSeries> DharmaTalkSeries { get; }
+    DbSet<DharmaTalk> DharmaTalks { get; }
+
+    // Outbox
+    DbSet<OutboxMessage> OutboxMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

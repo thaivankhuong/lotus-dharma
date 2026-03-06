@@ -1,4 +1,4 @@
-﻿using LotusDharma.Domain.Entities;
+using LotusDharma.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,7 +32,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasDefaultValue(true);
             
-        // Index for FK
         builder.HasIndex(p => p.CategoryId);
+        builder.HasIndex(p => p.IsActive);
+        builder.HasIndex(p => p.Name);
+        builder.HasIndex(p => new { p.CategoryId, p.IsActive })
+            .HasDatabaseName("IX_Products_CategoryId_IsActive");
     }
 }
