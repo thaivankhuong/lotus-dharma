@@ -57,11 +57,12 @@ public class LoginWithGoogleCommandHandler : IRequestHandler<LoginWithGoogleComm
 
         if (user == null)
         {
-            // Create new user
+            // Create new user (OAuth users have no password)
             user = new LotusDharma.Domain.Entities.User
             {
                 UserName = info.Email!,
                 Email = info.Email!,
+                PasswordHash = string.Empty,
                 EmailConfirmed = true,
                 Provider = "Google",
                 ProviderId = info.Sub,

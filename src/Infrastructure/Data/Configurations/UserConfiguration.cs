@@ -43,6 +43,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Email)
             .IsUnique();
 
+        builder.HasIndex(u => new { u.Provider, u.ProviderId })
+            .HasFilter("\"Provider\" IS NOT NULL AND \"ProviderId\" IS NOT NULL");
+
         // Relationships
         builder.HasMany(u => u.UserRoles)
             .WithOne(ur => ur.User)

@@ -1,6 +1,7 @@
 using LotusDharma.Application.Identity.Commands.LoginWithGoogle;
 using LotusDharma.Web.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using MediatR;
 
 namespace LotusDharma.Web.Endpoints;
@@ -11,7 +12,9 @@ public class Auth : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapPost(GoogleLogin, "google").AllowAnonymous();
+        groupBuilder.MapPost(GoogleLogin, "google")
+            .AllowAnonymous()
+            .RequireRateLimiting("login");
     }
 
     public async Task<IResult> GoogleLogin(ISender sender, LoginWithGoogleCommand command)
