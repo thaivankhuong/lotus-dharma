@@ -32,6 +32,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<UserToken> UserTokens => Set<UserToken>();
 
+    // Permission-based authorization entities
+    public DbSet<Permission> Permissions => Set<Permission>();
+
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+    public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+
     // Media
     public DbSet<Speaker> Speakers => Set<Speaker>();
     public DbSet<DharmaTalkSeries> DharmaTalkSeries => Set<DharmaTalkSeries>();
