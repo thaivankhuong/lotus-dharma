@@ -39,7 +39,8 @@ public class User : BaseAuditableEntity
     
     // Navigation properties
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    
+    public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+
     public ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
 }
 
