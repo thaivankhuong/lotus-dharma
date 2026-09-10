@@ -10,7 +10,7 @@ var postgres = builder
 
 var database = postgres.AddDatabase(databaseName);
 
-builder.AddProject<Projects.Web>("web")
+builder.AddProject<Projects.Web>("mypak-webapi")
     .WithReference(database)
     .WaitFor(database);
 

@@ -1,6 +1,6 @@
 {
-  "name": "LotusDharma Project",
-  "description": "Backend API for Lotus Dharma using .NET 9 Clean Architecture.",
+  "name": "mypak-webapi",
+  "description": "Backend API for mypak-webapi using .NET 9 Clean Architecture.",
   "owner": "Khuong",
 
   "context": {
@@ -17,6 +17,7 @@
   "structure": {
     "backend": {
       "path": "src/",
+      "defaultProject": "mypak-webapi",
       "projects": ["Domain", "Application", "Infrastructure", "Web"],
       "rules": ["BackendRules.md"],
       "limitScope": true

@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "LotusDharma.Web": {
+    "mypak-webapi": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:5000/api",
